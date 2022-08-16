@@ -27,6 +27,9 @@ class ListFragment : Fragment(R.layout.fragment_list) {
         binding.fab.setOnClickListener {
             findNavController().navigate(R.id.action_listFragment_to_addFragment)
         }
+        binding.listLayout.setOnClickListener {
+            findNavController().navigate(R.id.action_listFragment_to_updateFragment)
+        }
     }
 
 
