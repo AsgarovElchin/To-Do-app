@@ -1,4 +1,4 @@
-package com.elchinasgarov.data
+package com.elchinasgarov.data.models
 
 enum class Priority {
     HIGH,

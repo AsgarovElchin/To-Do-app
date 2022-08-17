@@ -1,6 +1,7 @@
 package com.elchinasgarov.data
 
 import androidx.room.TypeConverter
+import com.elchinasgarov.data.models.Priority
 
 class Converter {
     @TypeConverter
