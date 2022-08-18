@@ -50,6 +50,8 @@ class AddFragment : Fragment() {
 
 
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
+        binding.prioritiesSpinner.onItemSelectedListener = mSharedViewModel.listener
     }
 
     private fun insertDataToDb() {
