@@ -5,14 +5,20 @@ import android.view.*
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.elchinasgarov.data.viewmodel.ToDoViewModel
 import com.elchinasgarov.todoapp.R
 import com.elchinasgarov.todoapp.databinding.FragmentListBinding
 
 
 class ListFragment : Fragment(R.layout.fragment_list) {
+    private val mToDoViewModel: ToDoViewModel by viewModels()
     private lateinit var binding: FragmentListBinding
+    private val adapter: ListAdapter = ListAdapter()
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -25,6 +31,13 @@ class ListFragment : Fragment(R.layout.fragment_list) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.listRecyclerView.adapter = adapter
+        binding.listRecyclerView.layoutManager = LinearLayoutManager(requireActivity())
+
+        mToDoViewModel.getAllData.observe(viewLifecycleOwner, Observer { data->
+            adapter.submitList(data)
+        })
 
         binding.fab.setOnClickListener {
             findNavController().navigate(R.id.action_listFragment_to_addFragment)
@@ -46,7 +59,7 @@ class ListFragment : Fragment(R.layout.fragment_list) {
             }
 
 
-        },viewLifecycleOwner,Lifecycle.State.RESUMED)
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
 
