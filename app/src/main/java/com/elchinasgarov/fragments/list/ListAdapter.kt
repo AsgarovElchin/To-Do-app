@@ -2,10 +2,12 @@ package com.elchinasgarov.fragments.list
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import com.elchinasgarov.data.models.Priority
 import com.elchinasgarov.data.models.ToDoData
+import com.elchinasgarov.todoapp.R
 import com.elchinasgarov.todoapp.databinding.RowLayoutBinding
 
 class ListAdapter : ListAdapter<ToDoData, ListViewHolder>(MainDiffUtils) {
@@ -17,6 +19,11 @@ class ListAdapter : ListAdapter<ToDoData, ListViewHolder>(MainDiffUtils) {
 
     override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
         holder.bind(currentList[position])
+        holder.binding.rowBackground.setOnClickListener {
+            val action = ListFragmentDirections.actionListFragmentToUpdateFragment(currentList[position])
+            holder.binding.root.findNavController().navigate(action)
+        }
+
 
     }
 

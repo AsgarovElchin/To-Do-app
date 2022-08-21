@@ -1,6 +1,7 @@
 package com.elchinasgarov.fragments.list
 
 import androidx.core.content.ContextCompat
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.elchinasgarov.data.models.Priority
 import com.elchinasgarov.data.models.ToDoData
@@ -11,6 +12,7 @@ class ListViewHolder(val binding: RowLayoutBinding) : RecyclerView.ViewHolder(bi
     fun bind(toDoData: ToDoData) {
         binding.titleTxt.text = toDoData.title
         binding.descriptionTxt.text = toDoData.description
+
         when (toDoData.priority) {
             Priority.HIGH -> binding.priorityIndicator.setCardBackgroundColor(
                 ContextCompat.getColor(
