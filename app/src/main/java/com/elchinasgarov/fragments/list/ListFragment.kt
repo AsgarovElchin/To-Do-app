@@ -13,6 +13,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.elchinasgarov.data.viewmodel.SharedViewModel
 import com.elchinasgarov.data.viewmodel.ToDoViewModel
 import com.elchinasgarov.todoapp.R
 import com.elchinasgarov.todoapp.databinding.FragmentListBinding
@@ -21,6 +22,7 @@ import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 
 class ListFragment : Fragment(R.layout.fragment_list) {
     private val mToDoViewModel: ToDoViewModel by viewModels()
+    private val mSharedViewModel : SharedViewModel by viewModels()
     private lateinit var binding: FragmentListBinding
     private val adapter: ListAdapter = ListAdapter()
     override fun onCreateView(
@@ -43,12 +45,17 @@ class ListFragment : Fragment(R.layout.fragment_list) {
         }
 
         mToDoViewModel.getAllData.observe(viewLifecycleOwner, Observer { data ->
+            mSharedViewModel.checkIfDatabaseEmpty(data)
             adapter.submitList(data)
         })
 
         binding.fab.setOnClickListener {
             findNavController().navigate(R.id.action_listFragment_to_addFragment)
         }
+
+        mSharedViewModel.emptyDataBase.observe(viewLifecycleOwner, Observer {
+            showEmptyDatabaseView(it)
+        })
 
 
         val menuHost: MenuHost = requireActivity()
@@ -68,6 +75,16 @@ class ListFragment : Fragment(R.layout.fragment_list) {
 
 
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun showEmptyDatabaseView(emptyDatabase:Boolean) {
+        if(emptyDatabase){
+            binding.noDataImageView.visibility = View.VISIBLE
+            binding.noDataTextView.visibility = View.VISIBLE
+        }else{
+            binding.noDataImageView.visibility = View.INVISIBLE
+            binding.noDataTextView.visibility = View.INVISIBLE
+        }
     }
 
     private fun confirmRemoval() {
