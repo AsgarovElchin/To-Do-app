@@ -12,9 +12,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.elchinasgarov.data.viewmodel.ToDoViewModel
 import com.elchinasgarov.todoapp.R
 import com.elchinasgarov.todoapp.databinding.FragmentListBinding
+import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 
 
 class ListFragment : Fragment(R.layout.fragment_list) {
@@ -35,7 +37,10 @@ class ListFragment : Fragment(R.layout.fragment_list) {
         super.onViewCreated(view, savedInstanceState)
 
         binding.listRecyclerView.adapter = adapter
-        binding.listRecyclerView.layoutManager = LinearLayoutManager(requireActivity())
+        binding.listRecyclerView.layoutManager = StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL)
+        binding.listRecyclerView.itemAnimator = SlideInUpAnimator().apply {
+            addDuration = 300
+        }
 
         mToDoViewModel.getAllData.observe(viewLifecycleOwner, Observer { data ->
             adapter.submitList(data)
