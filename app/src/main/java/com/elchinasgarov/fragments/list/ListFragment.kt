@@ -11,18 +11,21 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.elchinasgarov.data.models.ToDoData
 import com.elchinasgarov.data.viewmodel.SharedViewModel
 import com.elchinasgarov.data.viewmodel.ToDoViewModel
 import com.elchinasgarov.todoapp.R
 import com.elchinasgarov.todoapp.databinding.FragmentListBinding
+import com.google.android.material.snackbar.Snackbar
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 
 
 class ListFragment : Fragment(R.layout.fragment_list) {
     private val mToDoViewModel: ToDoViewModel by viewModels()
-    private val mSharedViewModel : SharedViewModel by viewModels()
+    private val mSharedViewModel: SharedViewModel by viewModels()
     private lateinit var binding: FragmentListBinding
     private val adapter: ListAdapter = ListAdapter()
     override fun onCreateView(
@@ -38,11 +41,7 @@ class ListFragment : Fragment(R.layout.fragment_list) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.listRecyclerView.adapter = adapter
-        binding.listRecyclerView.layoutManager = StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL)
-        binding.listRecyclerView.itemAnimator = SlideInUpAnimator().apply {
-            addDuration = 300
-        }
+        setUpRecyclerView()
 
         mToDoViewModel.getAllData.observe(viewLifecycleOwner, Observer { data ->
             mSharedViewModel.checkIfDatabaseEmpty(data)
@@ -75,17 +74,53 @@ class ListFragment : Fragment(R.layout.fragment_list) {
 
 
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
+
     }
 
-    private fun showEmptyDatabaseView(emptyDatabase:Boolean) {
-        if(emptyDatabase){
+    private fun restoreDeletedData(view: View, deletedItem: ToDoData, position: Int) {
+        val snackbar = Snackbar.make(
+            view, "Deleted ${deletedItem.title}", Snackbar.LENGTH_LONG
+        )
+        snackbar.setAction("Undo") {
+            mToDoViewModel.insertData(deletedItem)
+        }
+        snackbar.show()
+
+    }
+
+    private fun setUpRecyclerView() {
+        binding.listRecyclerView.adapter = adapter
+        binding.listRecyclerView.layoutManager =
+            StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        binding.listRecyclerView.itemAnimator = SlideInUpAnimator().apply {
+            addDuration = 300
+        }
+        swipeToDelete(binding.listRecyclerView)
+    }
+
+    private fun swipeToDelete(recyclerView: RecyclerView) {
+        val swipeToDeleteCallBack = object : SwipeToDelete() {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val deletedItem = adapter.currentList[viewHolder.adapterPosition]
+                mToDoViewModel.deleteItem(deletedItem)
+                restoreDeletedData(viewHolder.itemView, deletedItem, viewHolder.adapterPosition)
+            }
+        }
+        val itemTouchHelper = ItemTouchHelper(swipeToDeleteCallBack)
+        itemTouchHelper.attachToRecyclerView(recyclerView)
+    }
+
+    private fun showEmptyDatabaseView(emptyDatabase: Boolean) {
+        if (emptyDatabase) {
             binding.noDataImageView.visibility = View.VISIBLE
             binding.noDataTextView.visibility = View.VISIBLE
-        }else{
+        } else {
             binding.noDataImageView.visibility = View.INVISIBLE
             binding.noDataTextView.visibility = View.INVISIBLE
         }
     }
+
 
     private fun confirmRemoval() {
         val builder = AlertDialog.Builder(requireContext())
