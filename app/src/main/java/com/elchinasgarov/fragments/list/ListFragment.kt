@@ -3,6 +3,7 @@ package com.elchinasgarov.fragments.list
 import android.app.AlertDialog
 import android.os.Bundle
 import android.view.*
+import androidx.appcompat.widget.SearchView
 import android.widget.Toast
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -23,7 +24,7 @@ import com.google.android.material.snackbar.Snackbar
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 
 
-class ListFragment : Fragment(R.layout.fragment_list) {
+class ListFragment : Fragment(R.layout.fragment_list), android.widget.SearchView.OnQueryTextListener{
     private val mToDoViewModel: ToDoViewModel by viewModels()
     private val mSharedViewModel: SharedViewModel by viewModels()
     private lateinit var binding: FragmentListBinding
@@ -37,6 +38,7 @@ class ListFragment : Fragment(R.layout.fragment_list) {
         return binding.root
 
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -59,17 +61,46 @@ class ListFragment : Fragment(R.layout.fragment_list) {
 
         val menuHost: MenuHost = requireActivity()
 
-        menuHost.addMenuProvider(object : MenuProvider {
+        menuHost.addMenuProvider(object : MenuProvider, SearchView.OnQueryTextListener {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.list_fragment_menu, menu)
+                val search = menu.findItem(R.id.menu_search)
+                val searchView = search.actionView as? SearchView
+                searchView?.isSubmitButtonEnabled = true
+                searchView?.setOnQueryTextListener(this)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 if (menuItem.itemId == R.id.menu_delete_all) {
                     confirmRemoval()
                 }
+                else if(menuItem.itemId == R.id.menu_priority_high){
+                    mToDoViewModel.sortByHighPriority.observe(requireActivity(),Observer{
+                        adapter.submitList(it)
+                    })
+                }
+                else if(menuItem.itemId == R.id.menu_priority_low){
+                    mToDoViewModel.sortByLowPriority.observe(requireActivity(),Observer{
+                        adapter.submitList(it)
+                    })
+                }
+
                 return true
 
+            }
+
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                if (query != null) {
+                    searchThroughDatabase(query)
+                }
+                return true
+            }
+
+            override fun onQueryTextChange(query: String?): Boolean {
+                if (query != null) {
+                    searchThroughDatabase(query)
+                }
+                return true
             }
 
 
@@ -136,4 +167,32 @@ class ListFragment : Fragment(R.layout.fragment_list) {
     }
 
 
+    private fun searchThroughDatabase(query: String) {
+        var searchQuery = "%${query}%"
+        mToDoViewModel.searchDatabase(searchQuery).observe(this, Observer { list ->
+            list?.let {
+                adapter.submitList(it)
+            }
+
+        })
+
+    }
+
+    override fun onQueryTextSubmit(query: String?): Boolean {
+        if (query != null) {
+            searchThroughDatabase(query)
+        }
+        return true
+    }
+
+
+    override fun onQueryTextChange(query: String?): Boolean {
+        if (query != null) {
+            searchThroughDatabase(query)
+        }
+        return true
+    }
+
+
 }
+
